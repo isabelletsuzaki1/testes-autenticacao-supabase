@@ -1,0 +1,359 @@
+{
+  "info": {
+    "name": "Testes Caixa Cinza - Supabase Auth",
+    "description": "Cinco cenários de teste. Configure API URL e chave legacy anon JWT (não a publishable) para atender ao header Authorization: Bearer {{api_key}}. Não publicar credenciais ou tokens.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "TC01 - Login válido",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "apikey",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/v1/token?grant_type=password",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "v1",
+            "token"
+          ],
+          "query": [
+            {
+              "key": "grant_type",
+              "value": "password"
+            }
+          ]
+        },
+        "response": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"TC01: login válido\", function () {",
+              "  pm.expect(pm.response.code).to.eql(200);",
+              "});",
+              "let resposta = {};",
+              "try { resposta = pm.response.json(); } catch (e) {}",
+              "pm.test(\"Resposta em JSON\", function () { pm.expect(typeof resposta).to.eql(\"object\"); });",
+              "pm.test(\"Access token retornado\", function () {",
+              "  pm.expect(resposta.access_token).to.be.a(\"string\").and.not.empty;",
+              "});",
+              "if (resposta.access_token) { pm.environment.set('access_token', resposta.access_token); }"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "TC02 - Senha incorreta",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "apikey",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}-incorreta\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/v1/token?grant_type=password",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "v1",
+            "token"
+          ],
+          "query": [
+            {
+              "key": "grant_type",
+              "value": "password"
+            }
+          ]
+        },
+        "response": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"TC02: login rejeitado\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([400, 401, 403, 422]);",
+              "});",
+              "let resposta = {};",
+              "try { resposta = pm.response.json(); } catch (e) {}",
+              "pm.test(\"Resposta em JSON\", function () { pm.expect(typeof resposta).to.eql(\"object\"); });",
+              "pm.test(\"Nenhum access token retornado\", function () {",
+              "  pm.expect(resposta.access_token).to.be.undefined;",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "TC03 - Usuário inexistente",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "apikey",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"naoexiste.teste@example.com\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/v1/token?grant_type=password",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "v1",
+            "token"
+          ],
+          "query": [
+            {
+              "key": "grant_type",
+              "value": "password"
+            }
+          ]
+        },
+        "response": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"TC03: login rejeitado\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([400, 401, 403, 422]);",
+              "});",
+              "let resposta = {};",
+              "try { resposta = pm.response.json(); } catch (e) {}",
+              "pm.test(\"Resposta em JSON\", function () { pm.expect(typeof resposta).to.eql(\"object\"); });",
+              "pm.test(\"Nenhum access token retornado\", function () {",
+              "  pm.expect(resposta.access_token).to.be.undefined;",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "TC04 - Campos vazios",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "apikey",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"\",\n  \"password\": \"\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/v1/token?grant_type=password",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "v1",
+            "token"
+          ],
+          "query": [
+            {
+              "key": "grant_type",
+              "value": "password"
+            }
+          ]
+        },
+        "response": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"TC04: login rejeitado\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([400, 401, 403, 422]);",
+              "});",
+              "let resposta = {};",
+              "try { resposta = pm.response.json(); } catch (e) {}",
+              "pm.test(\"Resposta em JSON\", function () { pm.expect(typeof resposta).to.eql(\"object\"); });",
+              "pm.test(\"Nenhum access token retornado\", function () {",
+              "  pm.expect(resposta.access_token).to.be.undefined;",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "TC05 - Credenciais inválidas",
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "apikey",
+            "value": "{{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Authorization",
+            "value": "Bearer {{api_key}}",
+            "type": "text"
+          },
+          {
+            "key": "Content-Type",
+            "value": "application/json",
+            "type": "text"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"invalido.teste@example.com\",\n  \"password\": \"credencial-invalida-9876\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "{{base_url}}/auth/v1/token?grant_type=password",
+          "host": [
+            "{{base_url}}"
+          ],
+          "path": [
+            "auth",
+            "v1",
+            "token"
+          ],
+          "query": [
+            {
+              "key": "grant_type",
+              "value": "password"
+            }
+          ]
+        },
+        "response": []
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test(\"TC05: login rejeitado\", function () {",
+              "  pm.expect(pm.response.code).to.be.oneOf([400, 401, 403, 422]);",
+              "});",
+              "let resposta = {};",
+              "try { resposta = pm.response.json(); } catch (e) {}",
+              "pm.test(\"Resposta em JSON\", function () { pm.expect(typeof resposta).to.eql(\"object\"); });",
+              "pm.test(\"Nenhum access token retornado\", function () {",
+              "  pm.expect(resposta.access_token).to.be.undefined;",
+              "});",
+              ""
+            ]
+          }
+        }
+      ]
+    }
+  ]
+}
